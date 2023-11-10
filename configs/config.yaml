@@ -1,0 +1,11 @@
+name: 'Unet'
+
+train_dir: './save/PD/train'
+train_gt_dir: './save/PD/train_gt'
+val_train_dir: './save/PD/val'
+val_gt_dir: './save/PD/val_gt'
+save_path: './save/PD'
+
+batch_size: 2
+epochs: 100
+learning_rate: 0.00005
