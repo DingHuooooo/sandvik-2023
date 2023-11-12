@@ -1,10 +1,10 @@
 name: 'Unet'
 
-train_dir: './save/PD/train'
-train_gt_dir: './save/PD/train_gt'
-val_train_dir: './save/PD/val'
-val_gt_dir: './save/PD/val_gt'
-save_path: './save/PD'
+train_dir: './src/dataset/PDImpression/train'
+train_gt_dir: './src/dataset/PDImpression/train_gt'
+val_train_dir: './src/dataset/PDImpression/val'
+val_gt_dir: './src/dataset/PDImpression/val_gt'
+save_path: './save/Wear_detection/PDImpression/gt'
 
 batch_size: 2
 epochs: 100

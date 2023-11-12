@@ -1,0 +1,20 @@
+Wear detection
+
+	1- Mechanical damage
+
+		Wear
+		将其放入Unet训练，包含数据增强。得到结果_unet.png
+		之后用Unet的结果用我们之前的方法放入sam，得到结果_sam.png
+
+		dmg
+		将其放入Unet训练，包含数据增强。得到结果_unet.png
+		之后用Unet的结果用我们之前的方法放入sam，得到结果_sam.png (这里注意dmg是许多小区域，因此可能需要对每一小区域进行重心确定。这里可以在预处理的时候用Wear_unet来滤除掉dmg_unet中在Wear_unet之外的错误识别）
+	
+	3 - PDImpression
+		
+		Wear
+		将其放入Unet训练，包含数据增强。得到结果_unet.png
+		之后用Unet的结果用我们之前的方法放入sam，得到结果_sam.png
+
+Tool detection
+	如同之前一样，将其放入sam，得到结果_sam.png + overlay_sam.png

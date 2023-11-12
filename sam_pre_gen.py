@@ -16,13 +16,11 @@ import shutil
 
 def load_image_paths(root_path):
     image_paths = []
-    image_extensions = ['*.jpg']
-    for dirpath, _, _ in os.walk(root_path):
-        for ext in image_extensions:
-            files = glob.glob(os.path.join(dirpath, ext))
-            for file_path in files:
-                if 'bit' not in os.path.basename(file_path):
-                    image_paths.append(file_path)
+    image_extensions = ['.jpg', '.png']  # Note the change here to just the extension
+    for dirpath, _, filenames in os.walk(root_path):
+        for file in filenames:
+            if file.endswith(tuple(image_extensions)) and 'bit' not in file:
+                image_paths.append(os.path.join(dirpath, file))
 
     return image_paths
 
@@ -55,18 +53,25 @@ def points_gen(pre_bitmap):
     height, width = mask.shape
     points_inside_contour = []
     points_outside_contour = []
-    for y in range(50, height, grid_spacing):
-        for x in range(100, width, grid_spacing):
+    for y in range(10, height, int(grid_spacing)):
+        for x in range(100, width, 4*grid_spacing):
             if cv2.pointPolygonTest(max_contour, (x, y), False) > 0:
                 points_inside_contour.append([x, y])
 
-    for y in range(50, height, grid_spacing):
-        for x in range(100, width, grid_spacing):
+    for y in range(10, height, grid_spacing):
+        for x in range(50, width, 4*grid_spacing):
             if cv2.pointPolygonTest(max_contour, (x, y), False) < 0:
                 points_outside_contour.append([x, y])
 
     input_point = np.array(points_inside_contour + points_outside_contour)
     input_label = [1]*len(points_inside_contour) + [0]*len(points_outside_contour)
+
+    # Calculate the resizing factors
+    resize_factor_x = 1024 / width
+    resize_factor_y = 1024 / height
+    input_points_resized = [(int(x * resize_factor_x), int(y * resize_factor_y)) for x, y in input_point]
+    input_points_resized = np.array(input_points_resized)
+
     return input_point, input_label
 
 
@@ -106,13 +111,11 @@ def main():
     sam = sam_model_registry[model_type](checkpoint=sam_checkpoint)
     sam = torch.nn.DataParallel(sam).cuda()
     sam = sam.module
-
     predictor = SamPredictor(sam)
-
     # Load image
-    paths = load_image_paths('src/Tool_Detection')
+    paths = load_image_paths('./src/Tool_detection')
     for img_path in tqdm(paths):
-        gt_path = img_path.rsplit(".", 1)[0] + "_bitmap.jpg"
+        gt_path = img_path.rsplit(".", 1)[0] + "_bitmap.png"
         image = np.array(Image.open(img_path).convert('RGB'))
         gt = np.array(Image.open(gt_path).convert('L'))
 
@@ -143,12 +146,15 @@ def main():
         pre_bitmap = cv2.resize(masks[0].astype(np.uint8), (gt.shape[1],gt.shape[0]), interpolation=cv2.INTER_NEAREST)
         pre_bitmap = mask_filter(pre_bitmap)
         # save image
-        save_image(image, './save/Tool/train/'+os.path.basename(img_path))
-        save_image(pre_bitmap*255, './save/Tool/train_gt_sam/'+os.path.basename(gt_path))
+        save_image(image, img_path.replace('src', 'save'))
+        save_image(pre_bitmap*255, gt_path.replace('src', 'save').replace('_bitmap', '_sampre_bitmap'))
+        # Overlay mask
+        pre_overlay = cv2.addWeighted(image, 0.8, np.stack((pre_bitmap*255,)*3, axis=-1), 0.2, 0)
+        save_image(pre_overlay, gt_path.replace('src', 'save').replace('_bitmap', '_overlay'))
 
 
 if __name__ == '__main__':
-    ensure_path('./save/Tool')
+    ensure_path('./save/Tool_detection')
     main()
-    dataset_div()
+    # dataset_div()
     

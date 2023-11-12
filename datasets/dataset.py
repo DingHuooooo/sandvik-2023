@@ -55,7 +55,7 @@ class MyDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, idx):
         img_path = os.path.join(self.img_dir, self.filepaths[idx])
-        gt_path = os.path.join(self.gt_dir, self.filepaths[idx].rsplit('.', 1)[0] + "_bitmap.jpg")
+        gt_path = os.path.join(self.gt_dir, self.filepaths[idx].rsplit('_', 1)[0] + "_label_" + self.filepaths[idx].rsplit('_', 1)[1])
     
         image = Image.open(img_path).convert('RGB')
         mask = Image.open(gt_path).convert('L')
